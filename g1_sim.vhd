@@ -3,7 +3,7 @@
 -- the entity of a simulation environment usually has no input output ports.
 -- file g1_sim_arc.vhd
 entity g1_sim is
-  port(s, s_syn: inout bit);
+  port(s, s_syn: out bit);
 end entity g1_sim;
 
 architecture sim of g1_sim is
@@ -12,7 +12,7 @@ architecture sim of g1_sim is
 -- signals are the same as the name of the ports of the entity g1 because it is
 -- much simpler but we could use different names and bind signal names to port
 -- names in the instanciation of g1.
-  signal clk, a, stop_simulation: bit;
+  signal clk, a, stop_simulation, s_syn_cp, s_cp: bit;
 
 begin
 
@@ -51,13 +51,16 @@ begin
 
 -- we instanciate the entity g1, architecture arc. we name the instance i_g1 and
 -- specify the association between port names and actual signals.
-  i_g1: entity work.g1(arc) port map(clk => clk, a => a, s => s);
-  syn_g1: entity work.g1(syn) port map(clk => clk, a => a, s => s_syn);
+  i_g1: entity work.g1(arc) port map(clk => clk, a => a, s => s_cp);
+  syn_g1: entity work.g1(syn) port map(clk => clk, a => a, s => s_syn_cp);
+
+  s <= s_cp;
+  s_syn <= s_syn_cp;
 
   process(clk)
   begin 
     if clk = '1' and clk'event then
-      assert s=s_syn report "bug" severity failure;
+      assert (s_cp=s_syn_cp) report "bug" severity failure;
     end if;
   end process;
   
